@@ -1,0 +1,29 @@
+name: lint
+
+on:
+  push:
+    branches-ignore:
+      - master
+  
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install black isort
+      - name: Lint with black
+        uses: wearerequired/lint-action@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          black: true
+          auto_fix: true
+      - name: Sort imports
+        run: | 
+          isort . --profile black
+          git commit -am "sorted imports" || echo No isort changes to commit! 
+          git push
