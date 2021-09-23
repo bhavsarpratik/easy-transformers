@@ -4,9 +4,9 @@ import ntpath
 import os
 from typing import Optional
 
+from pythonjsonlogger import jsonlogger
 from pytz import timezone, utc
 from rich.logging import RichHandler
-from pythonjsonlogger import jsonlogger
 
 
 def create_folder(directory):

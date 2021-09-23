@@ -1,17 +1,17 @@
 import os
 from typing import Tuple
 
+from cachetools import LRUCache, cached
 from transformers import (
+    AutoConfig,
     AutoModelForSequenceClassification,
     AutoTokenizer,
-    AutoConfig,
     pipeline,
 )
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
-from cachetools import LRUCache, cached
 
-from easy_transformers.loggers import create_logger
 from easy_transformers import constants
+from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
 
