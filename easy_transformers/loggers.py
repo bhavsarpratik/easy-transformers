@@ -4,9 +4,9 @@ import ntpath
 import os
 from typing import Optional
 
+from pythonjsonlogger import jsonlogger
 from pytz import timezone, utc
 from rich.logging import RichHandler
-from pythonjsonlogger import jsonlogger
 
 
 def create_folder(directory):
@@ -27,7 +27,7 @@ def create_logger(
     log_to_file: bool = False,
     rich_logging: bool = False,
     time_zone: Optional[str] = None,
-    json_logging: bool = False
+    json_logging: bool = False,
 ):
     """Creates a logger of given level and saves logs to a file
 
@@ -62,9 +62,25 @@ def create_logger(
 
     # These default log values get eliminated
     JSON_ELIMINATE_ARGS = [
-        'exc_info', 'exc_text', 'filename',
-        'lineno', 'module', 'msecs', 'msg', 'name', 'pathname', 'process',
-        'processName', 'relativeCreated', 'stack_info', 'thread', 'threadName', 'levelno', 'args', 'created']
+        "exc_info",
+        "exc_text",
+        "filename",
+        "lineno",
+        "module",
+        "msecs",
+        "msg",
+        "name",
+        "pathname",
+        "process",
+        "processName",
+        "relativeCreated",
+        "stack_info",
+        "thread",
+        "threadName",
+        "levelno",
+        "args",
+        "created",
+    ]
 
     if time_zone:
 
@@ -89,7 +105,9 @@ def create_logger(
     )
 
     if json_logging:
-        json_formatter = jsonlogger.JsonFormatter(reserved_attrs=JSON_ELIMINATE_ARGS, timestamp=True)
+        json_formatter = jsonlogger.JsonFormatter(
+            reserved_attrs=JSON_ELIMINATE_ARGS, timestamp=True
+        )
 
     if simple_logging:
         file_formatter = logging.Formatter("%(message)s")

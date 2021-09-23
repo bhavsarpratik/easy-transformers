@@ -2,3 +2,5 @@ sentence-transformers==2.*
 spacy==2.*
 cachetools==4.*
 python-json-logger==2.0.2
+pytz
+rich
