@@ -17,16 +17,22 @@ from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
 
-TRANSFORMERS_CACHE_SIZE = int(os.environ.get(
-    "EASY_TRANSFORMERS_CACHE_SIZE", constants.DEFAULT_EASY_TRANSFORMERS_CACHE_SIZE
-))
+TRANSFORMERS_CACHE_SIZE = int(
+    os.environ.get(
+        "EASY_TRANSFORMERS_CACHE_SIZE", constants.DEFAULT_EASY_TRANSFORMERS_CACHE_SIZE
+    )
+)
 
-TEXT_EMB_CACHE_SIZE = int(os.environ.get(
-    "EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE", constants.DEFAULT_EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE
-))
+TEXT_EMB_CACHE_SIZE = int(
+    os.environ.get(
+        "EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE",
+        constants.DEFAULT_EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE,
+    )
+)
 
 logger.info(f"EASY_TRANSFORMERS_CACHE_SIZE: {TRANSFORMERS_CACHE_SIZE}")
 logger.info(f"EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE: {TEXT_EMB_CACHE_SIZE}")
+
 
 @cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
 def get_model_and_tokenizer(
@@ -99,12 +105,13 @@ def get_pipeline(
         return_all_scores=return_all_scores,
     )
 
+
 class EasySentenceTransformers:
-    def __init__(self, model_name_or_path)->SentenceTransformer:
+    def __init__(self, model_name_or_path) -> SentenceTransformer:
         self.encoder = SentenceTransformer(model_name_or_path)
 
     @staticmethod
-    def normalise(vec: np.array, axis:int=None)->np.array:
+    def normalise(vec: np.array, axis: int = None) -> np.array:
         """Normalise vector to unit
 
         Args:
