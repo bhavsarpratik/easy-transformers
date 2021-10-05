@@ -8,6 +8,8 @@ from transformers import (
     AutoTokenizer,
     pipeline,
 )
+import numpy as np
+from sentence_transformers import SentenceTransformer
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
 
 from easy_transformers import constants
@@ -15,12 +17,18 @@ from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
 
-cache_size = os.environ.get(
+TRANSFORMERS_CACHE_SIZE = int(os.environ.get(
     "EASY_TRANSFORMERS_CACHE_SIZE", constants.DEFAULT_EASY_TRANSFORMERS_CACHE_SIZE
-)
+))
 
+TEXT_EMB_CACHE_SIZE = int(os.environ.get(
+    "EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE", constants.DEFAULT_EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE
+))
 
-@cached(LRUCache(maxsize=cache_size))
+logger.info(f"EASY_TRANSFORMERS_CACHE_SIZE: {TRANSFORMERS_CACHE_SIZE}")
+logger.info(f"EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE: {TEXT_EMB_CACHE_SIZE}")
+
+@cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
 def get_model_and_tokenizer(
     model_name_or_path: str,
     tokenizer_name_or_path: str,
@@ -53,7 +61,7 @@ def get_model_and_tokenizer(
     return model, tokenizer
 
 
-@cached(LRUCache(maxsize=cache_size))
+@cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
 def get_pipeline(
     pipeline_name: str,
     model_name_or_path: str,
@@ -90,3 +98,35 @@ def get_pipeline(
         tokenizer=tokenizer,
         return_all_scores=return_all_scores,
     )
+
+class EasySentenceTransformers:
+    def __init__(self, model_name_or_path)->SentenceTransformer:
+        self.encoder = SentenceTransformer(model_name_or_path)
+
+    @staticmethod
+    def normalise(vec: np.array, axis:int=None)->np.array:
+        """Normalise vector to unit
+
+        Args:
+            vec (np.array): vector
+            axis (int, optional): axis to normalise on. Defaults to None.
+
+        Returns:
+            np.array: unit vector
+        """
+        return (vec / np.linalg.norm(vec, axis=axis)).tolist()
+
+    @cached(LRUCache(maxsize=TEXT_EMB_CACHE_SIZE))
+    def get_text_emb(self, text: str, normalise=True) -> np.array:
+        """Get unit normalised text embedding
+
+        Args:
+            text (str): sentence
+
+        Returns:
+            np.array: sentence emb
+        """
+        text_emb = self.encoder.encode([text]).tolist()
+        if normalise:
+            text_emb = self.normalise(text_emb)
+        return text_emb
