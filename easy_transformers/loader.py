@@ -1,15 +1,15 @@
 import os
 from typing import Tuple
 
+import numpy as np
 from cachetools import LRUCache, cached
+from sentence_transformers import SentenceTransformer
 from transformers import (
     AutoConfig,
     AutoModelForSequenceClassification,
     AutoTokenizer,
     pipeline,
 )
-import numpy as np
-from sentence_transformers import SentenceTransformer
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
 
 from easy_transformers import constants
