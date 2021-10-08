@@ -1,4 +1,5 @@
 import os
+
 from easy_transformers import constants
 
 TRANSFORMERS_CACHE_SIZE = int(

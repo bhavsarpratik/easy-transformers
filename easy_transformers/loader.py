@@ -1,7 +1,7 @@
 from typing import List, Tuple, Union
 
-from cachetools import LRUCache, cached
 import numpy as np
+from cachetools import LRUCache, cached
 from sentence_transformers import SentenceTransformer
 from transformers import (
     AutoConfig,
@@ -11,7 +11,7 @@ from transformers import (
 )
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
 
-from easy_transformers import constants, TRANSFORMERS_CACHE_SIZE, TEXT_EMB_CACHE_SIZE
+from easy_transformers import TEXT_EMB_CACHE_SIZE, TRANSFORMERS_CACHE_SIZE, constants
 from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
