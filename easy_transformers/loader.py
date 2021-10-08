@@ -97,7 +97,9 @@ class EasySentenceTransformer:
         self.encoder = SentenceTransformer(model_name_or_path)
 
     @cached(LRUCache(maxsize=TEXT_EMB_CACHE_SIZE))
-    def encode(self, text: Union[str, List[str]], normalize_embeddings: bool=True, **kwargs) -> np.array:
+    def encode(
+        self, text: Union[str, List[str]], normalize_embeddings: bool = True, **kwargs
+    ) -> np.array:
         """Get unit normalised text embedding
 
         Args:
@@ -107,4 +109,6 @@ class EasySentenceTransformer:
         Returns:
             np.array: sentence emb
         """
-        return self.encoder.encode(text, normalize_embeddings=normalize_embeddings, **kwargs)
+        return self.encoder.encode(
+            text, normalize_embeddings=normalize_embeddings, **kwargs
+        )
