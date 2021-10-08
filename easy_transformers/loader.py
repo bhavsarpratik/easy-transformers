@@ -1,8 +1,7 @@
-import os
-from typing import Tuple
+from typing import List, Tuple, Union
 
-import numpy as np
 from cachetools import LRUCache, cached
+import numpy as np
 from sentence_transformers import SentenceTransformer
 from transformers import (
     AutoConfig,
@@ -12,23 +11,10 @@ from transformers import (
 )
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
 
-from easy_transformers import constants
+from easy_transformers import constants, TRANSFORMERS_CACHE_SIZE, TEXT_EMB_CACHE_SIZE
 from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
-
-TRANSFORMERS_CACHE_SIZE = int(
-    os.environ.get(
-        "EASY_TRANSFORMERS_CACHE_SIZE", constants.DEFAULT_EASY_TRANSFORMERS_CACHE_SIZE
-    )
-)
-
-TEXT_EMB_CACHE_SIZE = int(
-    os.environ.get(
-        "EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE",
-        constants.DEFAULT_EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE,
-    )
-)
 
 logger.info(f"EASY_TRANSFORMERS_CACHE_SIZE: {TRANSFORMERS_CACHE_SIZE}")
 logger.info(f"EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE: {TEXT_EMB_CACHE_SIZE}")
@@ -106,34 +92,19 @@ def get_pipeline(
     )
 
 
-class EasySentenceTransformers:
+class EasySentenceTransformer:
     def __init__(self, model_name_or_path) -> SentenceTransformer:
         self.encoder = SentenceTransformer(model_name_or_path)
 
-    @staticmethod
-    def normalise(vec: np.array, axis: int = None) -> np.array:
-        """Normalise vector to unit
-
-        Args:
-            vec (np.array): vector
-            axis (int, optional): axis to normalise on. Defaults to None.
-
-        Returns:
-            np.array: unit vector
-        """
-        return (vec / np.linalg.norm(vec, axis=axis)).tolist()
-
     @cached(LRUCache(maxsize=TEXT_EMB_CACHE_SIZE))
-    def get_text_emb(self, text: str, normalise=True) -> np.array:
+    def encode(self, text: Union[str, List[str]], normalize_embeddings: bool=True, **kwargs) -> np.array:
         """Get unit normalised text embedding
 
         Args:
             text (str): sentence
+            normalize_embeddings (str): whether to normalise embeddings to unit vector
 
         Returns:
             np.array: sentence emb
         """
-        text_emb = self.encoder.encode([text]).tolist()
-        if normalise:
-            text_emb = self.normalise(text_emb)
-        return text_emb
+        return self.encoder.encode(text, normalize_embeddings=normalize_embeddings, **kwargs)
