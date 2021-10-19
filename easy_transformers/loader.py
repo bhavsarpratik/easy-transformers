@@ -16,11 +16,11 @@ from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
 
-logger.info(f"EASY_TRANSFORMERS_CACHE_SIZE: {TRANSFORMERS_CACHE_SIZE}")
+# logger.info(f"EASY_TRANSFORMERS_CACHE_SIZE: {TRANSFORMERS_CACHE_SIZE}")
 logger.info(f"EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE: {TEXT_EMB_CACHE_SIZE}")
 
 
-@cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
+# @cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
 def get_model_and_tokenizer(
     model_name_or_path: str,
     tokenizer_name_or_path: str,
@@ -53,7 +53,7 @@ def get_model_and_tokenizer(
     return model, tokenizer
 
 
-@cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
+# @cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
 def get_pipeline(
     pipeline_name: str,
     model_name_or_path: str,
