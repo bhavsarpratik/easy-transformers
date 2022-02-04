@@ -9,6 +9,8 @@ from transformers import (
     AutoTokenizer,
     pipeline,
 )
+import onnxruntime as ort
+import torch
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
 
 from easy_transformers import TEXT_EMB_CACHE_SIZE, TRANSFORMERS_CACHE_SIZE, constants
@@ -91,7 +93,40 @@ def get_pipeline(
         return_all_scores=return_all_scores,
     )
 
+class ONNXPipelineForClassification:
+    
+    """ Custom ONNX Runtime Pipeline for Sequence Classification (same as the HuggingFace Pipeline) """
+    """
+    Args : 
+        model_path : path of the onnx model
+        tokenizer_path : path to the tokenizer (model directory)
+    """
+    
+    def __init__(self,model_path,tokenizer_path,label_map):
+        """ Load the ONNX model runtime and the tokenizer """
+        self.ort_session = ort.InferenceSession(model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, cache_dir='temp', local_files_only=True)
+        self.label_map = label_map
+        
+    def predict(self,text):
+        """ 
+        Args:
+            text : Batch of sentences to extract classification labels from
+        Returns:    
+            Tokenizes and predicts the input texts using the ONNX runtime.
+            and the scores and labels for each sample
+        """
+        messages = self.tokenizer(text,padding=True,return_tensors='np')
+        logits = self.ort_session.run(["logits"],dict(messages))[0]
+        scores = torch.nn.functional.softmax(torch.from_numpy(logits),dim=1).numpy()
+        inds = np.argmax(scores,axis=1)
+        
+        predictions = []
+        for i in range(len(logits)):
+            predictions.append({"label":self.label_map[int(inds[i])],"score":scores[i][inds[i]]})
+        return predictions
 
+    
 class EasySentenceTransformer:
     def __init__(self, model_name_or_path) -> SentenceTransformer:
         self.encoder = SentenceTransformer(model_name_or_path)
