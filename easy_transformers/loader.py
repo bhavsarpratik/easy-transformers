@@ -1,10 +1,10 @@
 from typing import List, Tuple, Union
+
+import numpy as np
 import onnxruntime as ort
 import torch
-import numpy as np
 from cachetools import LRUCache, cached
 from sentence_transformers import SentenceTransformer
-
 from transformers import (
     AutoConfig,
     AutoModelForSequenceClassification,
@@ -12,8 +12,9 @@ from transformers import (
     pipeline,
 )
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
-from easy_transformers.aws_utils import download_model_from_s3
+
 from easy_transformers import TEXT_EMB_CACHE_SIZE, TRANSFORMERS_CACHE_SIZE, constants
+from easy_transformers.aws_utils import download_model_from_s3
 from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
