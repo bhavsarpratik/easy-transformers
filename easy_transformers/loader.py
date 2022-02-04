@@ -93,41 +93,49 @@ def get_pipeline(
         return_all_scores=return_all_scores,
     )
 
+
 class ONNXPipelineForSequenceClassification:
 
-    """ Custom ONNX Runtime Pipeline for Sequence Classification (same as the HuggingFace Pipeline) """
+    """Custom ONNX Runtime Pipeline for Sequence Classification (same as the HuggingFace Pipeline)"""
+
     """
     Args : 
         model_path : path of the onnx model
         tokenizer_path : path to the tokenizer (model directory)
     """
 
-    def __init__(self,model_path,tokenizer_path,label_map):
-        """ Load the ONNX model runtime and the tokenizer with label map being the labels to class names mapping"""
+    def __init__(self, model_path, tokenizer_path, label_map):
+        """Load the ONNX model runtime and the tokenizer with label map being the labels to class names mapping"""
         self.ort_session = ort.InferenceSession(model_path)
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, cache_dir='temp', local_files_only=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            tokenizer_path, cache_dir="temp", local_files_only=True
+        )
         self.label_map = label_map
 
-    def predict(self,text):
-        """ 
+    def predict(self, text):
+        """
         Args:
             text : Batch of sentences to extract classification labels from
-        Returns:    
+        Returns:
             Tokenizes and predicts the input texts using the ONNX runtime.
             and the scores and labels for each sample
         """
-        messages = self.tokenizer(text,padding=True,return_tensors='np')
-        logits = self.ort_session.run(["logits"],dict(messages))[0]
-        scores = torch.nn.functional.softmax(torch.from_numpy(logits),dim=1).numpy()
-        inds = np.argmax(scores,axis=1)
+        messages = self.tokenizer(text, padding=True, return_tensors="np")
+        logits = self.ort_session.run(["logits"], dict(messages))[0]
+        scores = torch.nn.functional.softmax(torch.from_numpy(logits), dim=1).numpy()
+        inds = np.argmax(scores, axis=1)
 
         predictions = []
         for i in range(len(logits)):
-            predictions.append({"label":self.label_map[int(inds[i])],"score":scores[i][inds[i]]})
+            predictions.append(
+                {"label": self.label_map[int(inds[i])], "score": scores[i][inds[i]]}
+            )
         return predictions
 
 
-def get_onnx_sequence_classification_pipeline(model_name_or_path: str,label_map: dict,onnx_name:str) -> ONNXPipelineForSequenceClassification:
+def get_onnx_sequence_classification_pipeline(
+    model_name_or_path: str, label_map: dict, onnx_name: str
+) -> ONNXPipelineForSequenceClassification:
 
     """Sentiment pipeline for the given model and tokenizer
     Args:
@@ -140,22 +148,28 @@ def get_onnx_sequence_classification_pipeline(model_name_or_path: str,label_map:
     logger.info("Loading Sentiment Model...")
     model_path = model_name_or_path + "/" + onnx_name
     tokenizer_path = model_name_or_path
-    
-    return ONNXPipelineForSequenceClassification(model_path,tokenizer_path,label_map)
+
+    return ONNXPipelineForSequenceClassification(model_path, tokenizer_path, label_map)
+
 
 class ONNXSequenceClassificationModel:
-    def __init__(self,model_name:str,remote_dir:str,onnx_name:str,label_map:dict):
+    def __init__(
+        self, model_name: str, remote_dir: str, onnx_name: str, label_map: dict
+    ):
         logger.info("Loading Sentence Sentiment Model...")
-        self.model = self.load_onnx_sequence_classification_pipeline(model_name,remote_dir,onnx_name,label_map)
-    
-    def load_onnx_sequence_classification_pipeline(self,model_name,remote_dir,onnx_name,label_map):
+        self.model = self.load_onnx_sequence_classification_pipeline(
+            model_name, remote_dir, onnx_name, label_map
+        )
+
+    def load_onnx_sequence_classification_pipeline(
+        self, model_name, remote_dir, onnx_name, label_map
+    ):
         """Downloads the sentence sentiment model from s3 and loads it."""
         model_path = download_model_from_s3(
-            model_name = model_name, 
-            remote_dir= remote_dir
+            model_name=model_name, remote_dir=remote_dir
         )
         pipeline = get_onnx_sequence_classification_pipeline(
-            model_path,label_map,onnx_name
+            model_path, label_map, onnx_name
         )
         return pipeline
 
