@@ -1,5 +1,6 @@
 from typing import List, Tuple, Union
-
+import onnxruntime as ort
+import torch
 import numpy as np
 from cachetools import LRUCache, cached
 from sentence_transformers import SentenceTransformer
@@ -90,6 +91,72 @@ def get_pipeline(
         tokenizer=tokenizer,
         return_all_scores=return_all_scores,
     )
+
+class ONNXPipelineForSequenceClassification:
+
+    """ Custom ONNX Runtime Pipeline for Sequence Classification (same as the HuggingFace Pipeline) """
+    """
+    Args : 
+        model_path : path of the onnx model
+        tokenizer_path : path to the tokenizer (model directory)
+    """
+
+    def __init__(self,model_path,tokenizer_path,label_map):
+        """ Load the ONNX model runtime and the tokenizer with label map being the labels to class names mapping"""
+        self.ort_session = ort.InferenceSession(model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, cache_dir='temp', local_files_only=True)
+        self.label_map = label_map
+
+    def predict(self,text):
+        """ 
+        Args:
+            text : Batch of sentences to extract classification labels from
+        Returns:    
+            Tokenizes and predicts the input texts using the ONNX runtime.
+            and the scores and labels for each sample
+        """
+        messages = self.tokenizer(text,padding=True,return_tensors='np')
+        logits = self.ort_session.run(["logits"],dict(messages))[0]
+        scores = torch.nn.functional.softmax(torch.from_numpy(logits),dim=1).numpy()
+        inds = np.argmax(scores,axis=1)
+
+        predictions = []
+        for i in range(len(logits)):
+            predictions.append({"label":self.label_map[int(inds[i])],"score":scores[i][inds[i]]})
+        return predictions
+
+
+def get_onnx_sequence_classification_pipeline(model_name_or_path: str,label_map: dict) -> ONNXPipelineForSequenceClassification:
+
+    """Sentiment pipeline for the given model and tokenizer
+    Args:
+        model_name_or_path (str): name of the pre-trained model or path to the model weights
+        label_map (dict): mapping between the class_labels and the class_names
+    Returns:
+        pipeline: ONNX sentiment pipeline
+    """
+    logger.info("Loading Sentiment Model...")
+    model_path = model_name_or_path + config.ONNX_NAME
+    tokenizer_path = model_name_or_path
+    
+    return ONNXPipelineForSequenceClassification(model_path,tokenizer_path,label_map)
+
+class ONNXSequenceClassificationModel:
+    def __init__(self):
+        logger.info("Loading Sentence Sentiment Model...")
+        self.model = self.load_onnx_sequence_classification_pipeline()
+    
+    def load_onnx_sequence_classification_pipeline(self,MODEL):
+        """Downloads the sentence sentiment model from s3 and loads it."""
+        model_path = download_model_from_s3(
+            model_name = config.MODEL_NAME, 
+            pipeline_name = config.PIPELINE_NAME,
+            version = config.SENTIMENT_VERSION
+        )
+        pipeline = get_onnx_sequence_classification_pipeline(
+            model_path,
+        )
+        return pipeline
 
 
 class EasySentenceTransformer:
