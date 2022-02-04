@@ -1,7 +1,8 @@
 from typing import List, Tuple, Union
+
+import numpy as np
 import onnxruntime as ort
 import torch
-import numpy as np
 from cachetools import LRUCache, cached
 from sentence_transformers import SentenceTransformer
 from transformers import (
