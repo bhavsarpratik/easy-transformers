@@ -1,7 +1,6 @@
-from optimum.onnxruntime import ORTConfig
-from optimum.onnxruntime import ORTQuantizer
 import argparse
 
+from optimum.onnxruntime import ORTConfig, ORTQuantizer
 
 if __name__ == "__main__":
 
