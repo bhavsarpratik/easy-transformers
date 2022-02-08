@@ -105,11 +105,14 @@ class ONNXPipelineForSequenceClassification:
         tokenizer_path : path to the tokenizer (model directory)
         label_map (dict): the label mappings between labels and strings
     """
-    def __init__(self,model_path:str,tokenizer_path:str,label_map:dict):
-        """ Load the ONNX model runtime and the tokenizer with label map being the labels to class names mapping"""
-        
+
+    def __init__(self, model_path: str, tokenizer_path: str, label_map: dict):
+        """Load the ONNX model runtime and the tokenizer with label map being the labels to class names mapping"""
+
         self.ort_session = ort.InferenceSession(model_path)
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, local_files_only=True)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            tokenizer_path, local_files_only=True
+        )
         self.label_map = label_map
 
     def predict(self,text: List[str]) -> List[dict]:
@@ -136,28 +139,37 @@ class ONNXPipelineForSequenceClassification:
 class ONNXSequenceClassificationModel:
     """
     Downloads the model from given remote_dir(s3 url) and loads the model pipeline using the ONNXPipelineForSequenceClassification
-    Args: 
+    Args:
         model_name: The name of folder you want to download the model
         remote_dir: S3 url where the model directory is present
         onn_name: the name of the onnx file in the model directory
         label_map: dictionary mapping from labels to strings
     """
-    def __init__(self,model_name:str,remote_dir:str,onnx_name:str,label_map:dict):
+
+    def __init__(
+        self, model_name: str, remote_dir: str, onnx_name: str, label_map: dict
+    ):
         logger.info("Loading Sentence Sentiment Model...")
-        self.model = self.load_onnx_sequence_classification_pipeline(model_name,remote_dir,onnx_name,label_map)
-    
-    def load_onnx_sequence_classification_pipeline(self,model_name:str,remote_dir:str,onnx_name:str,label_map:dict) -> ONNXPipelineForSequenceClassification:
+        self.model = self.load_onnx_sequence_classification_pipeline(
+            model_name, remote_dir, onnx_name, label_map
+        )
+
+    def load_onnx_sequence_classification_pipeline(
+        self, model_name: str, remote_dir: str, onnx_name: str, label_map: dict
+    ) -> ONNXPipelineForSequenceClassification:
         """Downloads the sentence sentiment model from s3 and loads it."""
-        
+
         model_path = download_model_from_s3(
             model_name=model_name, remote_dir=remote_dir
         )
-        
+
         logger.info("Loading Sentiment Model...")
         model_path = model_path + "/" + onnx_name
         tokenizer_path = model_path
-    
-        pipeline = ONNXPipelineForSequenceClassification(model_path,tokenizer_path,label_map)
+
+        pipeline = ONNXPipelineForSequenceClassification(
+            model_path, tokenizer_path, label_map
+        )
 
         return pipeline
 
