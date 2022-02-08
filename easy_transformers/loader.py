@@ -112,7 +112,7 @@ class ONNXPipelineForSequenceClassification:
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_path, local_files_only=True)
         self.label_map = label_map
 
-    def predict(self,text: list(str)) -> list(dict):
+    def predict(self,text: List[str]) -> List[dict]:
         """ 
         Args:
             text : Batch of sentences to extract classification labels from
