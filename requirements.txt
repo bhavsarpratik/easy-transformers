@@ -8,4 +8,4 @@ onnxruntime==1.10.0
 cloudpathlib
 cloudpathlib[s3]
 datasets
-git+https://github.com/huggingface/optimum.git
+optimum[onnxruntime]
