@@ -115,8 +115,8 @@ class ONNXPipelineForSequenceClassification:
         )
         self.label_map = label_map
 
-    def predict(self,text: List[str]) -> List[dict]:
-        """ 
+    def predict(self, text: List[str]) -> List[dict]:
+        """
         Args:
             text : Batch of sentences to extract classification labels from
         Returns:
