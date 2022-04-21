@@ -2,8 +2,8 @@ tokenizers==0.11.6
 transformers==4.18.0
 sentence-transformers==2.*
 spacy==2.*
-cachetools==4.*
-python-json-logger==2.0.2
+cachetools
+python-json-logger
 pytz
 rich
 onnxruntime==1.10.0
