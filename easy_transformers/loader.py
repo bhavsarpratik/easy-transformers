@@ -3,7 +3,6 @@ from typing import List, Tuple, Union
 import numpy as np
 import onnxruntime as ort
 import torch
-from cachetools import LRUCache, cached
 from sentence_transformers import SentenceTransformer
 from transformers import (
     AutoConfig,
@@ -13,17 +12,13 @@ from transformers import (
 )
 from transformers.models.auto.auto_factory import _BaseAutoModelClass
 
-from easy_transformers import TEXT_EMB_CACHE_SIZE, TRANSFORMERS_CACHE_SIZE, constants
+from easy_transformers import constants
 from easy_transformers.aws_utils import download_model_from_s3
 from easy_transformers.loggers import create_logger
 
 logger = create_logger(project_name="easy_transformers", level="INFO")
 
-# logger.info(f"EASY_TRANSFORMERS_CACHE_SIZE: {TRANSFORMERS_CACHE_SIZE}")
-logger.info(f"EASY_TRANSFORMERS_TEXT_EMB_CACHE_SIZE: {TEXT_EMB_CACHE_SIZE}")
 
-
-# @cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
 def get_model_and_tokenizer(
     model_name_or_path: str,
     tokenizer_name_or_path: str,
@@ -56,7 +51,6 @@ def get_model_and_tokenizer(
     return model, tokenizer
 
 
-# @cached(LRUCache(maxsize=TRANSFORMERS_CACHE_SIZE))
 def get_pipeline(
     pipeline_name: str,
     model_name_or_path: str,
@@ -178,7 +172,6 @@ class EasySentenceTransformer:
     def __init__(self, model_name_or_path) -> SentenceTransformer:
         self.encoder = SentenceTransformer(model_name_or_path)
 
-    @cached(LRUCache(maxsize=TEXT_EMB_CACHE_SIZE))
     def encode(
         self, text: Union[str, List[str]], normalize_embeddings: bool = True, **kwargs
     ) -> np.array:
