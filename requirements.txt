@@ -8,5 +8,5 @@ rich
 onnxruntime==1.10.0
 cloudpathlib
 cloudpathlib[s3]
-datasets==2.*
+datasets==2.1
 optimum[onnxruntime]
